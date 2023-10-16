@@ -1,22 +1,22 @@
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy.ext.hybrid import hybrid_property
+from setup import db, bcrypt
 
-db = SQLAlchemy()
 
-# many-to-many association table
+
 pizza_toppings = db.Table(
     'pizza_toppings',
     db.Column('pizza_id', db.Integer, db.ForeignKey('pizzas.id'), primary_key=True),
     db.Column('topping_id', db.Integer, db.ForeignKey('toppings.id'), primary_key=True)
 )
 
-# User Model
+
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(120), nullable=False)
+    password = db.Column(db.String(120), nullable=False)  
 
     orders = db.relationship('Order', back_populates='user', lazy=True)
 
@@ -28,8 +28,21 @@ class User(db.Model, SerializerMixin):
             'id': self.id,
             'username': self.username,
         }
+    
+    @hybrid_property
+    def password_hash(self):
+        return {"message": "You can't view password hashes"}
+    
+    @password_hash.setter
+    def password_hash(self, password):
+     
+        self.password = bcrypt.generate_password_hash(password.encode('utf-8')).decode('utf-8')
 
-# Pizza Model
+    def validate_password(self, password):
+       
+        return bcrypt.check_password_hash(self.password, password.encode('utf-8'))
+
+
 class Pizza(db.Model, SerializerMixin):
     __tablename__ = 'pizzas'
 
@@ -50,14 +63,14 @@ class Pizza(db.Model, SerializerMixin):
             'price': self.price,
         }
 
-#Topping Model
+
 class Topping(db.Model, SerializerMixin):
     __tablename__ = 'toppings'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
 
-#many-to-many relationship with pizzas
+
     pizzas = db.relationship('Pizza', secondary=pizza_toppings, back_populates='toppings', lazy=True)
 
     def __repr__(self):
@@ -69,7 +82,7 @@ class Topping(db.Model, SerializerMixin):
             'name': self.name,
         }
 
-# Define Order Model
+
 class Order(db.Model, SerializerMixin):
     __tablename__ = 'orders'
 

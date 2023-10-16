@@ -1,47 +1,46 @@
 
 .App {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background-color: #f0f0f0; 
-    padding: 20px;
-  }
-  
-  h1 {
-    font-size: 2rem;
-    color: #333; 
-  }
-  
- 
-  .content-overlay {
-    background-color: rgba(255, 255, 255, 0.9); 
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
-    margin: 20px auto;
-    max-width: 400px; 
-  }
-  
-  form {
-    display: flex;
-    flex-direction: column;
-  }
- 
-  input {
-    margin: 10px 0;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
- 
-  button {
-    background-color: #007bff; 
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  
-  
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background-color: #f0f0f0; 
+  padding: 20px;
+}
+
+h1 {
+  font-size: 2rem;
+  color: #333; 
+}
+
+
+.content-overlay {
+  background-color: rgba(255, 255, 255, 0.9); 
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
+  margin: 20px auto;
+  max-width: 400px; 
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+input {
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+
+button {
+  background-color: #007bff; 
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+

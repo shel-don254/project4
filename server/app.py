@@ -1,42 +1,67 @@
-from flask import Flask, jsonify, request
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from models import db, User, Pizza, Topping, Order
+from flask import jsonify, session, request , render_template
+from setup import app, Resource, api, db
+from models import Pizza, User, Topping, Order
+@app.route('/')
+@app.route('/<int:id>')
+def index(id=0):
+    return render_template("index.html")
 
-app = Flask(__name__)
 
-# Configuring the app
-app.config['SECRET_KEY'] = '19902022'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db.init_app(app)
-migrate = Migrate(app, db)
-
-# Routes for listing all users
 @app.route('/users', methods=['GET'])
 def list_users():
     users = User.query.all()
     serialized_users = [user.serialize() for user in users]
     return jsonify(serialized_users)
 
-# Route for creating a new user
-@app.route('/users', methods=['POST'])
-def create_user():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+class Login(Resource):
+    def post(self):
+        login_data = request.get_json()
+        username = login_data.get('username')
+        password = login_data.get('password')
 
-    if not username or not password:
-        return jsonify({'message': 'Username and password are required'}), 400
+        if not username or not password:
+            return {"message": "Username and password are required"}, 400
+        
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return {"message": "User not found"}, 404
 
-    user = User(username=username, password=password)
-    db.session.add(user)
-    db.session.commit()
+        if not user.validate_password(password):
+            return {"message": "Invalid password"}, 401
+        
+        response_data = {
+            "message": "Login successful",
+            "user_id": user.id
+        }
+        
+        session['user_id'] = user.id
+        return response_data, 200 
 
-    return jsonify({'message': 'User created successfully'}), 201
+api.add_resource(Login, '/login', endpoint='login')
 
-# Routes for listing all pizzas and creating a new pizza
+
+class SignUp(Resource):
+    def post(self):
+        userData = request.get_json()
+        username = userData['username']
+        password = userData['password']
+
+        new_user = User(username=username)
+        new_user.password_hash = password  
+
+        db.session.add(new_user)
+        db.session.commit()
+        session['random_user'] = new_user.id
+        
+        response_data = {
+            "message": "New user created",
+            "user_id": new_user.id
+        }
+        
+        return response_data, 201
+
+api.add_resource(SignUp, '/signup', endpoint='signup')
+
 @app.route('/pizzas', methods=['GET', 'POST'])
 def pizzas():
     if request.method == 'GET':
@@ -57,14 +82,14 @@ def pizzas():
 
         return jsonify({'message': 'Pizza created successfully'}), 201
 
-# Route for listing all toppings
+
 @app.route('/toppings', methods=['GET'])
 def list_toppings():
     toppings = Topping.query.all()
     serialized_toppings = [topping.serialize() for topping in toppings]
     return jsonify(serialized_toppings)
 
-# Route for creating a new order
+
 @app.route('/orders', methods=['POST'])
 def create_order():
     data = request.get_json()
